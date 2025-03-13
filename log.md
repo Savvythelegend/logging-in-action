@@ -181,3 +181,125 @@ process_csv("data.csv")
 ✅ **Writing Logs to a File**  
 ✅ **Real-World Examples** → ML pipeline, Flask API  
 ✅ **Mini Project** → Data Processing Logger  
+
+
+# Logging in Python: Handlers, Rotating Logs, and BackupCount Explained
+
+## 3. Adding Handlers — WTF is That?
+### Why Do We Need Handlers?
+Imagine you want:
+- Logs to be saved **in a file** AND displayed in the **terminal (console)**.
+- To **limit file size** so logs don’t get too big.
+
+That’s where **Handlers** come in.
+
+### Example: Adding a File & Console Handler
+```python
+import logging
+
+# Create logger
+logger = logging.getLogger("MyLogger")
+logger.setLevel(logging.INFO)
+
+# File handler (save logs in a file)
+file_handler = logging.FileHandler("mylog.log")
+file_handler.setFormatter(logging.Formatter("%(asctime)s - %(levelname)s - %(message)s"))
+
+# Console handler (show logs in terminal)
+console_handler = logging.StreamHandler()
+console_handler.setFormatter(logging.Formatter("%(levelname)s: %(message)s"))
+
+# Add handlers to logger
+logger.addHandler(file_handler)
+logger.addHandler(console_handler)
+
+# Example logs
+logger.info("This will be saved in a file AND shown in terminal")
+logger.warning("Warning message here!")
+```
+
+### What Happens?
+Logs appear in the terminal like this:
+```
+INFO: This will be saved in a file AND shown in terminal
+WARNING: Warning message here!
+```
+
+Logs are also saved in **mylog.log** with timestamps.
+
+🔥 Now you can track logs **everywhere**—both in the **terminal** and in a **file**!
+
+---
+
+## 4. Rotating Logs — WTF is That?
+### Why Do We Need Rotating Logs?
+Imagine your **log file grows to 1GB** 😱. We don’t want that! **Rotating logs** ensure that files are rotated **after reaching a certain size**.
+
+### Example: Rotating Logs
+```python
+from logging.handlers import RotatingFileHandler
+import logging
+
+logger = logging.getLogger("MyLogger")
+logger.setLevel(logging.INFO)
+
+# Create a rotating file handler (max 5KB, keep 3 old log files)
+file_handler = RotatingFileHandler("mylog.log", maxBytes=5000, backupCount=3)
+file_handler.setFormatter(logging.Formatter("%(asctime)s - %(levelname)s - %(message)s"))
+
+logger.addHandler(file_handler)
+
+# Generate logs
+for i in range(1000):
+    logger.info(f"This is log message {i}")
+```
+
+### What Happens?
+- Once **mylog.log reaches 5KB**, it gets renamed to **mylog.log.1**.
+- A new empty **mylog.log** is created.
+- The process continues, creating **mylog.log.2, mylog.log.3**, etc.
+- **Older logs don’t bloat the disk!**
+
+🔥 Now your logs won’t get out of control.
+
+---
+
+## How `backupCount` and `maxBytes` Work Together
+### **Understanding the Rotation Process**
+- **`maxBytes=5000`** → Once `mylog.log` **reaches 5000 bytes**, it gets renamed to `mylog.log.1` and a new `mylog.log` is created.
+- **`backupCount=3`** → Keeps **the last 3 rotated logs** (`mylog.log.1`, `mylog.log.2`, `mylog.log.3`) and deletes older ones.
+- **New logs are always written to `mylog.log`**, and when it hits `maxBytes`, **rotation happens again**.
+
+---
+
+## Are Rotated Logs the Same Size?
+Not **exactly**. Here’s why:
+- `mylog.log` will be **close to** `maxBytes` (~5000 bytes before rotating).
+- `mylog.log.1`, `mylog.log.2`, etc., might be **slightly smaller** if rotation happens mid-log message.
+
+### Example Scenario:
+1. `mylog.log` → **Hits 5000 bytes**.
+2. **Rotation happens**:
+   - `mylog.log` → renamed to `mylog.log.1`.
+   - A new empty `mylog.log` is created.
+3. **Process repeats** → `mylog.log.1` becomes `mylog.log.2`, and `mylog.log.2` becomes `mylog.log.3`.
+4. If `mylog.log.3` **already exists**, it **gets deleted** to maintain `backupCount=3`.
+
+---
+
+## Want to Check the File Sizes?
+Run this Python script:
+```python
+import os
+
+log_files = ["mylog.log", "mylog.log.1", "mylog.log.2", "mylog.log.3"]
+
+for log in log_files:
+    if os.path.exists(log):
+        print(f"{log}: {os.path.getsize(log)} bytes")
+```
+
+This will show the **actual size** of each log file!
+
+🔥 Now you're in control of **log file sizes** and **rotations**!
+
