@@ -1,4 +1,4 @@
-# **Python Logging — Structured Notes**
+# **Logging — Structured Notes**
 
 We’ll follow an **intuitive learning approach**:
 
