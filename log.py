@@ -1,4 +1,3 @@
-# ✅ 2. Logging in a Flask API (For Debugging Requests)
 from flask import Flask
 import logging
 
@@ -20,4 +19,3 @@ def error():
 
 if __name__ == "__main__":
     app.run(debug=True)
-# 📝 Use Case: Log API requests and errors for debugging.
